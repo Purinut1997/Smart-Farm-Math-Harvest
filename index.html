@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ฟาร์มอัจฉริยะ: เก็บเกี่ยวคณิตศาสตร์</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body class="font-['Mali'] bg-[#2d3748]">
+  <div class="w-full h-[100dvh] flex justify-center items-center overflow-hidden">
+    <div id="game-container" class="relative flex flex-col h-full w-full max-w-[430px] bg-[#E8F5E9] text-[#3E2723] overflow-hidden sm:shadow-2xl sm:border-x-4 sm:border-black/30">
+    
+    <!-- Main Menu -->
+    <div id="main-menu" class="screen active absolute inset-0 z-[100] flex flex-col items-center justify-center p-4 bg-cover bg-center" style="background-image: url('/src/assets/images/beautiful_cartoon_farm_game_1788322143855.jpg');">
+      <div class="absolute inset-0 bg-black/20 backdrop-blur-sm z-0"></div>
+      <div class="bg-[#FFF8DC]/95 border-4 border-[#8D6E63] rounded-3xl p-8 shadow-[0_10px_0_0_rgba(141,110,99,1)] text-center flex flex-col items-center max-w-md w-full relative overflow-hidden z-10">
+        <div class="absolute -top-4 -right-4 text-6xl opacity-20">🌻</div>
+        <div class="absolute -bottom-4 -left-4 text-6xl opacity-20">🚜</div>
+        
+        <h1 class="text-3xl sm:text-4xl font-black mb-4 border-b-4 border-[#8D6E63] pb-4 text-[#3E2723] relative z-10 leading-tight">
+          ฟาร์มอัจฉริยะ<br><span class="text-[#4CAF50] text-4xl">เก็บเกี่ยวคณิตศาสตร์</span>
+        </h1>
+        <p class="credits text-sm font-bold text-[#795548] mb-8 relative z-10">Created by MIKPURINUT</p>
+        
+        <button id="start-btn" class="bg-[#FF9800] text-white border-4 border-[#E65100] rounded-2xl px-10 py-4 text-2xl font-black shadow-[0_6px_0_0_rgba(230,81,0,1)] hover:translate-y-[4px] hover:shadow-[0_2px_0_0_rgba(230,81,0,1)] active:translate-y-[6px] active:shadow-none transition-all relative z-10">
+          เริ่มเล่นเลย!
+        </button>
+      </div>
+    </div>
+    
+    <!-- Game UI -->
+    <div id="game-ui" class="screen absolute inset-0 z-10 w-full h-full overflow-hidden">
+      
+      <!-- Canvas Area (Full Screen) -->
+      <div id="canvas-container" class="absolute inset-0 bg-[#81C784]">
+        <canvas id="game-canvas" class="absolute inset-0 w-full h-full touch-none"></canvas>
+      </div>
+      
+      <!-- Top UI (Floating HUD) -->
+      <div id="top-bar" class="absolute top-4 left-4 right-4 flex items-start justify-between pointer-events-none z-20">
+        
+        <!-- Left Stats -->
+        <div class="flex items-center gap-3 sm:gap-5 bg-[#8D6E63]/85 backdrop-blur-md p-2 sm:p-3 rounded-2xl border-2 border-[#5D4037]/50 shadow-lg pointer-events-auto">
+          <div class="flex flex-col items-center px-1 sm:px-2">
+            <span class="text-[10px] sm:text-xs font-bold text-[#D7CCC8]">ฤดูกาล</span>
+            <span id="season-day" class="text-sm sm:text-lg font-black text-[#FFD54F]">วันที่ 1</span>
+          </div>
+          <div class="h-8 w-[2px] bg-[#5D4037]/50"></div>
+          <div class="flex flex-col items-center px-1 sm:px-2">
+            <span class="text-[10px] sm:text-xs font-bold text-[#D7CCC8]">ยอดเงิน</span>
+            <span id="money" class="text-sm sm:text-lg font-black text-[#81C784]">฿100.00</span>
+          </div>
+        </div>
+        
+        <!-- Right Actions -->
+        <div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 sm:gap-3 pointer-events-auto">
+          <button id="expand-btn" class="bg-[#4CAF50]/90 backdrop-blur-md text-white px-3 py-2 sm:px-4 sm:py-3 font-bold rounded-2xl border-b-4 border-[#2E7D32] shadow-lg hover:translate-y-[2px] hover:border-b-2 active:translate-y-[4px] active:border-b-0 transition-all text-xs sm:text-sm flex items-center gap-1">
+            <span>➕</span> <span class="hidden sm:inline">ขยายฟาร์ม (50฿)</span>
+          </button>
+          
+          <div class="flex items-center gap-2 bg-[#81D4FA]/85 backdrop-blur-md p-2 sm:p-3 rounded-2xl border-2 border-[#0288D1]/50 shadow-lg">
+            <div class="flex flex-col items-center px-1">
+              <span class="text-[10px] sm:text-xs font-bold text-[#01579B]">บัวรดน้ำ</span>
+              <span id="water-fraction" class="text-sm sm:text-lg font-black text-[#01579B]">1/1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Bottom Toolbar (Floating HUD) -->
+      <div id="bottom-bar" class="absolute bottom-6 left-0 right-0 pointer-events-none z-20 px-2 pb-safe flex justify-center">
+        <div class="pointer-events-auto overflow-x-auto hide-scrollbar touch-pan-x bg-[#FFF8DC]/85 backdrop-blur-md border-2 border-[#8D6E63]/50 rounded-3xl shadow-lg max-w-full">
+          <div class="flex flex-nowrap justify-start gap-2 sm:gap-4 p-2 sm:p-3 w-max">
+            
+            <button class="tool-btn active group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="hoe">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">⛏️</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full">พรวนดิน</span>
+          </button>
+
+          <button class="tool-btn group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="water">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">💧</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full">รดน้ำ</span>
+          </button>
+
+          <button class="tool-btn group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="seed-carrot">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">🥕</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full truncate w-full text-center">แครอท (5฿)</span>
+          </button>
+
+          <button class="tool-btn group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="seed-corn">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">🌽</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full truncate w-full text-center">ข้าวโพด (15฿)</span>
+          </button>
+
+          <button class="tool-btn group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="seed-watermelon">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">🍉</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full truncate w-full text-center">แตงโม (50฿)</span>
+          </button>
+
+          <button class="tool-btn group flex flex-col items-center gap-1 cursor-pointer bg-transparent border-none p-0 outline-none w-14 sm:w-20 shrink-0" data-tool="harvest">
+            <div class="icon-box w-12 h-12 sm:w-14 sm:h-14 bg-white/95 border-4 border-[#8D6E63] rounded-2xl flex items-center justify-center text-2xl shadow-[0_4px_0_0_rgba(141,110,99,1)] transition-all relative overflow-hidden">
+              <span class="relative z-10">🧺</span>
+            </div>
+            <span class="text-[10px] sm:text-xs font-bold text-[#5D4037] label bg-white/70 px-2 rounded-full">เก็บเกี่ยว</span>
+          </button>
+
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Math Modals -->
+    <div id="math-modal" class="modal absolute inset-0 bg-[#3E2723]/60 z-[150] items-center justify-center p-4 backdrop-blur-sm">
+      <div class="modal-content bg-[#FFF8DC] border-4 border-[#8D6E63] rounded-3xl p-6 shadow-[0_10px_0_0_rgba(141,110,99,1)] w-full max-w-md flex flex-col">
+        <h2 id="math-title" class="text-2xl font-black text-[#E65100] border-b-4 border-[#FFCC80] pb-2 mb-4 flex items-center gap-2">
+          🧠 โจทย์คณิตศาสตร์
+        </h2>
+        <p id="math-question" class="text-base sm:text-lg mb-6 text-[#5D4037] font-semibold leading-relaxed bg-white p-4 rounded-xl border-2 border-[#D7CCC8]">คำถาม...</p>
+        <div id="math-inputs" class="flex flex-col gap-3 mb-6"></div>
+        <div class="flex gap-4">
+          <button id="math-submit" class="flex-1 bg-[#4CAF50] text-white px-4 py-3 rounded-xl font-bold text-lg border-b-4 border-[#2E7D32] hover:translate-y-[2px] hover:border-b-2 active:translate-y-[4px] active:border-b-0 transition-all shadow-md">ตอบ</button>
+          <button id="math-cancel" class="flex-1 bg-[#E0E0E0] text-[#5D4037] px-4 py-3 rounded-xl font-bold text-lg border-b-4 border-[#9E9E9E] hover:translate-y-[2px] hover:border-b-2 active:translate-y-[4px] active:border-b-0 transition-all shadow-md">ยกเลิก</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tutorial Modal -->
+    <div id="tutorial-modal" class="modal absolute inset-0 bg-[#3E2723]/60 z-[200] items-center justify-center p-4 backdrop-blur-sm">
+      <div class="modal-content bg-[#FFF8DC] border-4 border-[#8D6E63] rounded-3xl p-6 shadow-[0_10px_0_0_rgba(141,110,99,1)] w-full max-w-lg flex flex-col max-h-[90vh] overflow-y-auto">
+        <h2 class="text-2xl sm:text-3xl font-black text-[#4CAF50] border-b-4 border-[#A5D6A7] pb-2 mb-4 text-center">
+          📖 คู่มือการเล่นฟาร์ม
+        </h2>
+        <div class="text-sm sm:text-base mb-6 text-[#5D4037] font-semibold leading-relaxed space-y-4">
+          <div class="bg-white p-4 rounded-2xl border-2 border-[#D7CCC8]">
+            <p class="text-[#E65100] font-bold text-lg mb-2">เป้าหมายของคุณ:</p>
+            <p>บริหารฟาร์ม ปลูกผัก และฝึกฝนทักษะคณิตศาสตร์ไปพร้อมกัน!</p>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-white p-3 rounded-xl border-2 border-[#D7CCC8] flex flex-col items-center text-center">
+              <span class="text-3xl mb-1">⛏️</span>
+              <span class="font-bold text-[#8D6E63]">พรวนดิน</span>
+              <span class="text-xs mt-1">แตะที่หญ้า</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border-2 border-[#D7CCC8] flex flex-col items-center text-center">
+              <span class="text-3xl mb-1">🌱</span>
+              <span class="font-bold text-[#8D6E63]">ปลูกพืช</span>
+              <span class="text-xs mt-1">แตะที่ดินพรวน</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border-2 border-[#D7CCC8] flex flex-col items-center text-center">
+              <span class="text-3xl mb-1">💧</span>
+              <span class="font-bold text-[#8D6E63]">รดน้ำ</span>
+              <span class="text-xs mt-1">เพื่อให้พืชโต</span>
+            </div>
+            <div class="bg-white p-3 rounded-xl border-2 border-[#D7CCC8] flex flex-col items-center text-center">
+              <span class="text-3xl mb-1">🧺</span>
+              <span class="font-bold text-[#8D6E63]">เก็บเกี่ยว</span>
+              <span class="text-xs mt-1">เมื่อมีแสงเรืองรอง</span>
+            </div>
+          </div>
+          
+          <div class="bg-[#E3F2FD] p-4 rounded-2xl border-2 border-[#81D4FA]">
+            <p class="text-[#0288D1] font-bold mb-2">🧮 การคำนวณในเกม:</p>
+            <ul class="list-disc pl-5 space-y-1 text-[#01579B] text-sm">
+              <li><strong>ขยายฟาร์ม:</strong> บวกลบเลขง่ายๆ</li>
+              <li><strong>เติมน้ำ:</strong> คำนวณปริมาณน้ำ</li>
+              <li><strong>ขายผลผลิต:</strong> บวกจำนวนเงินขายของ</li>
+            </ul>
+          </div>
+        </div>
+        <button id="tutorial-close-btn" class="w-full bg-[#FF9800] text-white px-4 py-4 rounded-xl font-black text-xl border-b-4 border-[#E65100] shadow-md hover:translate-y-[2px] hover:border-b-2 active:translate-y-[4px] active:border-b-0 transition-all">
+          เริ่มทำฟาร์มเลย! 🚜
+        </button>
+      </div>
+    </div>
+  </div>
+  </div>
+  
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
