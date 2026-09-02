@@ -10,6 +10,7 @@ export class MathSystem {
         this.cancelBtn = document.getElementById('math-cancel');
         
         this.onSuccess = null;
+        this.onFail = null;
         this.currentAnswer = null;
         
         this.submitBtn.addEventListener('click', () => this.checkAnswer());
@@ -30,6 +31,7 @@ export class MathSystem {
         this.modal.classList.remove('active');
         this.game.state = 'PLAYING';
         this.onSuccess = null;
+        this.onFail = null;
     }
 
     checkAnswer() {
@@ -43,6 +45,13 @@ export class MathSystem {
             if (this.onSuccess) this.onSuccess(this.currentAnswer);
             this.closeModal();
         } else {
+            if (this.onFail) {
+                const shouldClose = this.onFail();
+                if (shouldClose) {
+                    this.closeModal();
+                    return;
+                }
+            }
             alert('ไม่ถูกต้อง ลองใหม่อีกครั้ง!');
             input.value = '';
         }
@@ -69,20 +78,24 @@ export class MathSystem {
                 question: `มีน้ำอยู่ ${a} ลิตร เติมเพิ่มอีก ${b} ลิตร รวมเป็นกี่ลิตร?`,
                 answer: a + b
             };
-        } else {
-            // harvest
-            const price1 = (a * 5);
-            const price2 = (b * 5);
+        } else if (type === 'heal') {
+            const op = Math.random() > 0.5 ? '+' : '*';
+            const ans = op === '+' ? a + b : a * b;
+            const opName = op === '+' ? 'บวก' : 'คูณ';
             return {
-                title: "ขายผลผลิต",
-                question: `ขายผักได้ ${price1} บาท และขายผลไม้ได้ ${price2} บาท รวมเป็นเงินกี่บาท?`,
-                answer: price1 + price2
+                title: "รักษาพืชที่เหี่ยวเฉา",
+                question: `จงหาผลลัพธ์: ${a} ${op} ${b} = ?`,
+                answer: ans
             };
+        } else {
+            // fallback
+            return { title: "?", question: "?", answer: 0 };
         }
     }
 
     async triggerAreaPuzzle(callback) {
         this.onSuccess = callback;
+        this.onFail = null;
         const puzzle = await this.fetchPuzzle('expand');
         
         this.showModal(
@@ -101,6 +114,7 @@ export class MathSystem {
 
     async triggerFractionPuzzle(callback) {
         this.onSuccess = callback;
+        this.onFail = null;
         const puzzle = await this.fetchPuzzle('water');
         
         this.showModal(
@@ -117,9 +131,10 @@ export class MathSystem {
         );
     }
 
-    async triggerDecimalPuzzle(callback) {
-        this.onSuccess = callback;
-        const puzzle = await this.fetchPuzzle('harvest');
+    async triggerHealPuzzle(onSuccess, onFail) {
+        this.onSuccess = onSuccess;
+        this.onFail = onFail;
+        const puzzle = await this.fetchPuzzle('heal');
         
         this.showModal(
             puzzle.title,

@@ -80,6 +80,27 @@ export class FarmLogic {
         const tile = this.getTile(x, y);
         if (!tile) return;
 
+        // If plant is withered, ANY interaction triggers the heal puzzle
+        if (tile.plant && tile.plant.isWithered) {
+            let mistakes = 0;
+            this.game.math.triggerHealPuzzle(() => {
+                tile.plant.isWithered = false;
+                if (Math.random() < 0.10) {
+                    tile.plant.bonusMultiplier = 2; // 10% chance for 2x yield
+                }
+            }, () => {
+                mistakes++;
+                if (mistakes >= 3) {
+                    alert('ต้นไม้ตายแล้ว!');
+                    tile.plant = null;
+                    tile.state = 'plowed';
+                    return true; // Close the modal
+                }
+                return false;
+            });
+            return; // Block other tool actions
+        }
+
         this.lastAction = { x, y, tool, time: now };
 
         let actionTool = tool;
@@ -100,7 +121,7 @@ export class FarmLogic {
                 if (tile.state === 'plowed' && !tile.plant) {
                     const crop = CROPS[seedType];
                     if (crop && this.game.spendMoney(crop.cost)) {
-                        tile.plant = { type: seedType, growth: 0 };
+                        tile.plant = { type: seedType, growth: 0, isWithered: false, rolledWither: false, bonusMultiplier: 1 };
                         if(this.game.audio) this.game.audio.playPlant();
                     } else if (crop) {
                         alert(`เงินไม่พอซื้อเมล็ดพันธุ์! (ต้องการ ${crop.cost} บาท)`);
@@ -117,18 +138,18 @@ export class FarmLogic {
                 }
                 break;
             case 'harvest':
-                if (tile.plant && tile.plant.growth >= 100) {
+                if (tile.plant && tile.plant.growth >= 100 && !tile.plant.isWithered) {
                     const cropType = tile.plant.type || 'carrot';
                     const profit = CROPS[cropType] ? CROPS[cropType].profit : 15;
+                    const multiplier = tile.plant.bonusMultiplier || 1;
+                    const totalProfit = profit * multiplier;
+                    
                     tile.plant = null;
                     tile.watered = false; // Harvesting dries the soil
                     
                     if(this.game.audio) this.game.audio.playPlant();
                     
-                    // Trigger market sale math puzzle
-                    this.game.math.triggerDecimalPuzzle((earned) => {
-                        this.game.addMoney(profit); // Use base profit for simplicity, puzzle success gives profit
-                    });
+                    this.game.addMoney(totalProfit);
                 }
                 break;
         }
@@ -153,7 +174,7 @@ export class FarmLogic {
         // Grow plants over time
         this.tiles.forEach(col => {
             col.forEach(tile => {
-                if (tile.plant && tile.watered && tile.plant.growth < 100) {
+                if (tile.plant && tile.watered && tile.plant.growth < 100 && !tile.plant.isWithered) {
                     const cropType = tile.plant.type || 'carrot';
                     const timeRequired = CROPS[cropType] ? CROPS[cropType].growTime : 10;
                     // timeRequired is in seconds. Growth is 0 to 100.
@@ -162,6 +183,12 @@ export class FarmLogic {
                     tile.plant.growth += (growthRate * (dt / 1000));
                     if (tile.plant.growth >= 100) {
                         tile.plant.growth = 100;
+                        if (!tile.plant.rolledWither) {
+                            tile.plant.rolledWither = true;
+                            if (Math.random() < 0.30) {
+                                tile.plant.isWithered = true;
+                            }
+                        }
                     }
                 }
             });

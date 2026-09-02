@@ -276,12 +276,31 @@ export class Renderer {
                         this.ctx.shadowBlur = 20;
                     }
                     
+                    if (tile.plant.isWithered) {
+                        this.ctx.filter = 'grayscale(100%) sepia(50%) brightness(80%)';
+                    }
+
                     this.ctx.fillText(emoji, cx, cy);
                     
-                    // Reset shadow
+                    // Reset shadow and filter
                     this.ctx.shadowColor = 'transparent';
                     this.ctx.shadowOffsetY = 0;
                     this.ctx.shadowBlur = 0;
+                    this.ctx.filter = 'none';
+
+                    if (tile.plant.isWithered) {
+                        // Draw warning icon above
+                        this.ctx.font = `${this.GRID_SIZE * 0.3}px Arial`;
+                        this.ctx.fillText('🥀', cx, cy - this.GRID_SIZE * 0.5);
+                    } else if (tile.plant.bonusMultiplier === 2) {
+                        // Draw 2x bonus indicator
+                        this.ctx.font = `bold ${this.GRID_SIZE * 0.25}px Arial`;
+                        this.ctx.fillStyle = '#FFD54F';
+                        this.ctx.strokeStyle = '#5D4037';
+                        this.ctx.lineWidth = 2;
+                        this.ctx.strokeText('x2', cx + this.GRID_SIZE * 0.3, cy - this.GRID_SIZE * 0.3);
+                        this.ctx.fillText('x2', cx + this.GRID_SIZE * 0.3, cy - this.GRID_SIZE * 0.3);
+                    }
                 }
             });
         });

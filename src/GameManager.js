@@ -22,6 +22,7 @@ export class GameManager {
             money: document.getElementById('money'),
             waterFraction: document.getElementById('water-fraction'),
             expandBtn: document.getElementById('expand-btn'),
+            restartBtn: document.getElementById('restart-btn'),
             tools: document.querySelectorAll('.tool-btn')
         };
 
@@ -121,6 +122,10 @@ export class GameManager {
             });
         });
 
+        this.ui.restartBtn.addEventListener('click', () => {
+            this.restartGame();
+        });
+
         this.ui.expandBtn.addEventListener('click', () => {
             const expandCost = 50;
             if (this.money >= expandCost) {
@@ -152,6 +157,24 @@ export class GameManager {
 
         // Show tutorial modal before playing
         this.tutorialModal.classList.add('active');
+    }
+
+    restartGame() {
+        localStorage.removeItem('farmGameSave');
+        this.money = 100.00;
+        this.waterCapacity = { current: 4, max: 4 };
+        
+        // Reset farm tiles
+        this.farm.tiles.clear();
+        for(let x = -2; x <= 2; x++) {
+            for(let y = -2; y <= 2; y++) {
+                this.farm.addTile(x, y, 'grass');
+            }
+        }
+        
+        this.updateUI();
+        this.renderer.centerCamera();
+        this.saveGame();
     }
 
     getStats() {
